@@ -75,9 +75,6 @@ public class UserService {
         cookieUtils.deleteCookie(res, "rt");
         cookieUtils.setCookie(res, "rt", rt, rtCookieMaxAge);
 
-        HttpSession session = req.getSession(true);
-        session.setAttribute("loginUserPk", entity.getIuser());
-
         return UserSigninVo.builder()
                 .result(Const.SUCCESS)
                 .iuser(entity.getIuser())

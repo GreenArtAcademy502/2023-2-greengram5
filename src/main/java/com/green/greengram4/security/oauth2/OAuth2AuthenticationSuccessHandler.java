@@ -3,6 +3,9 @@ package com.green.greengram4.security.oauth2;
 import com.green.greengram4.common.AppProperties;
 import com.green.greengram4.common.CookieUtils;
 import com.green.greengram4.security.JwtTokenProvider;
+import com.green.greengram4.security.MyPrincipal;
+import com.green.greengram4.security.MyUserDetails;
+import com.green.greengram4.user.model.UserEntity;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.URI;
@@ -48,11 +52,33 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         Optional<String> redirectUri = cookieUtils.getCookie(request, REDIRECT_URI_PARAM_COOKIE_NAME)
                                                 .map(Cookie::getValue);
 
-        if(redirectUri.isPresent() && hasAuthorizedRedirectUri(redirectUri.get())) {
+        if(redirectUri.isPresent() && !hasAuthorizedRedirectUri(redirectUri.get())) {
             throw new IllegalArgumentException("Sorry!, Unauthorized Redirect URI");
         }
 
-        return super.determineTargetUrl(request, response);
+        String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
+
+        MyUserDetails myUserDetails = (MyUserDetails) authentication.getPrincipal();
+        MyPrincipal myPrincipal = myUserDetails.getMyPrincipal();
+
+        String at = jwtTokenProvider.generateAccessToken(myPrincipal);
+        String rt = jwtTokenProvider.generateRefreshToken(myPrincipal);
+
+        //rt > cookie에 담을꺼임
+        int rtCookieMaxAge = appProperties.getJwt().getRefreshTokenCookieMaxAge();
+        cookieUtils.deleteCookie(response, "rt");
+        cookieUtils.setCookie(response, "rt", rt, rtCookieMaxAge);
+
+        UserEntity userEntity = myUserDetails.getUserEntity();
+
+        return UriComponentsBuilder.fromUriString(targetUrl)
+                                    .queryParam("access_token", at)
+                                    .queryParam("iuser", userEntity.getIuser())
+                                    .queryParam("nm", userEntity.getNm()).encode()
+                                    .queryParam("pic", userEntity.getPic())
+                                    .queryParam("firebase_token", userEntity.getFirebaseToken())
+                                    .build()
+                                    .toUriString();
     }
 
     private void clearAuthenticationAttributes(HttpServletRequest request, HttpServletResponse response) {
@@ -62,8 +88,19 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     private boolean hasAuthorizedRedirectUri(String uri) {
         URI clientRedriectUri = URI.create(uri);
+        log.info("clientRedriectUri.getHost(): {}", clientRedriectUri.getHost());
+        log.info("clientRedriectUri.getPort(): {}", clientRedriectUri.getPort());
 
-        return appProperties.get
+        return appProperties.getOauth2().getAuthorizedRedirectUris()
+                .stream()
+                .anyMatch(redirectUri -> {
+                    URI authorizedURI = URI.create(redirectUri);
+                    if(authorizedURI.getHost().equalsIgnoreCase(clientRedriectUri.getHost())
+                            && authorizedURI.getPort() == clientRedriectUri.getPort()) {
+                        return true;
+                    }
+                    return false;
+                });
     }
 }
 
