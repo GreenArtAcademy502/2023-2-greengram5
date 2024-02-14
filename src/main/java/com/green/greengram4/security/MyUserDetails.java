@@ -34,7 +34,7 @@ public class MyUserDetails implements UserDetails, OAuth2User {
     public String getPassword() { return null; }
 
     @Override
-    public String getUsername() { return userEntity.getUid(); }
+    public String getUsername() { return userEntity == null ? null : userEntity.getUid(); }
 
     @Override
     public boolean isAccountNonExpired() {
