@@ -9,9 +9,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 @ConfigurationPropertiesScan
 @SpringBootApplication
 public class Greengram5Application {
-
     public static void main(String[] args) {
         SpringApplication.run(Greengram5Application.class, args);
     }
-
 }
