@@ -11,7 +11,6 @@ import com.green.greengram4.user.model.*;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -53,7 +52,7 @@ public class UserService {
         UserSelDto sDto = new UserSelDto();
         sDto.setUid(dto.getUid());
 
-        UserEntity entity = mapper.selUser(sDto);
+        UserModel entity = mapper.selUser(sDto);
         if(entity == null) { //아이디 없음
             throw new RestApiException(AuthErrorCode.NOT_EXIST_USER_ID);
         } else if(!passwordEncoder.matches(dto.getUpw(), entity.getUpw())) { // 비밀번호를 확인해 주세요.
