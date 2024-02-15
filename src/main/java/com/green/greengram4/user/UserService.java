@@ -33,25 +33,73 @@ public class UserService {
     private final AuthenticationFacade authenticationFacade;
     private final MyFileUtils myFileUtils;
 
-
     public ResVo signup(UserSignupDto dto) {
         String hashedPw = passwordEncoder.encode(dto.getUpw());
-        //비밀번호 암호화
-
-        UserSignupProcDto pDto = new UserSignupProcDto();
-        pDto.setUid(dto.getUid());
-        pDto.setUpw(hashedPw);
-        pDto.setNm(dto.getNm());
-        pDto.setPic(dto.getPic());
-
-        log.info("before - pDto.iuser : {}", pDto.getIuser());
-        int affectedRows = mapper.insUser(pDto);
-        log.info("after - pDto.iuser : {}", pDto.getIuser());
-
-        return new ResVo(pDto.getIuser()); //회원가입한 iuser pk값이 리턴
+        UserEntity entity = UserEntity.builder()
+                .providerType(ProviderTypeEnum.LOCAL)
+                .uid(dto.getUid())
+                .upw(hashedPw)
+                .nm(dto.getNm())
+                .pic(dto.getPic())
+                .role(RoleEnum.USER)
+                .build();
+        UserEntity result = repository.save(entity);
+        return new ResVo(result.getIuser().intValue());
     }
 
-    public UserSigninVo signin(HttpServletRequest req, HttpServletResponse res, UserSigninDto dto) {
+
+
+//    public ResVo signup(UserSignupDto dto) {
+//        String hashedPw = passwordEncoder.encode(dto.getUpw());
+//        //비밀번호 암호화
+//
+//        UserSignupProcDto pDto = new UserSignupProcDto();
+//        pDto.setUid(dto.getUid());
+//        pDto.setUpw(hashedPw);
+//        pDto.setNm(dto.getNm());
+//        pDto.setPic(dto.getPic());
+//
+//        log.info("before - pDto.iuser : {}", pDto.getIuser());
+//        int affectedRows = mapper.insUser(pDto);
+//        log.info("after - pDto.iuser : {}", pDto.getIuser());
+//
+//        return new ResVo(pDto.getIuser()); //회원가입한 iuser pk값이 리턴
+//    }
+
+    public UserSigninVo signin(HttpServletResponse res, UserSigninDto dto) {
+        Optional<UserEntity> optEntity = repository.findByProviderTypeAndUid(ProviderTypeEnum.LOCAL, dto.getUid());
+        UserEntity entity = optEntity.orElseThrow(() -> new RestApiException(AuthErrorCode.NOT_EXIST_USER_ID));
+
+        if(!passwordEncoder.matches(dto.getUpw(), entity.getUpw())) {
+            throw new RestApiException(AuthErrorCode.VALID_PASSWORD);
+        }
+
+        int iuser = entity.getIuser().intValue();
+        MyPrincipal myPrincipal = MyPrincipal.builder()
+                .iuser(iuser)
+                .build();
+        myPrincipal.getRoles().add(entity.getRole().name());
+
+        String at = jwtTokenProvider.generateAccessToken(myPrincipal);
+        String rt = jwtTokenProvider.generateRefreshToken(myPrincipal);
+
+        //rt > cookie에 담을꺼임
+        int rtCookieMaxAge = appProperties.getJwt().getRefreshTokenCookieMaxAge();
+        cookieUtils.deleteCookie(res, "rt");
+        cookieUtils.setCookie(res, "rt", rt, rtCookieMaxAge);
+
+        return UserSigninVo.builder()
+                .result(Const.SUCCESS)
+                .iuser(iuser)
+                .nm(entity.getNm())
+                .pic(entity.getPic())
+                .firebaseToken(entity.getFirebaseToken())
+                .accessToken(at)
+                .build();
+
+    }
+    /*
+    public UserSigninVo signin(HttpServletResponse res, UserSigninDto dto) {
         UserSelDto sDto = new UserSelDto();
         sDto.setUid(dto.getUid());
 
@@ -86,7 +134,7 @@ public class UserService {
                 .accessToken(at)
                 .build();
     }
-
+*/
     public ResVo signout(HttpServletResponse res) {
         cookieUtils.deleteCookie(res, "rt");
         return new ResVo(1);

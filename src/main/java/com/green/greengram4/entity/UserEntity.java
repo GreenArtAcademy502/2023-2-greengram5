@@ -13,13 +13,16 @@ import org.hibernate.annotations.ColumnDefault;
                 columnNames = { "provider_type", "uid" }
         )
 })
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserEntity extends BaseEntity {
     @Id
     @Column(columnDefinition = "BIGINT UNSIGNED")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long iuser;
 
-    @Column(length = 10, name = "provider_type", nullable = false)
+    @Column(length = 10, nullable = false)
     @Enumerated(value = EnumType.STRING)
     @ColumnDefault("'LOCAL'")
     private ProviderTypeEnum providerType;
@@ -36,7 +39,7 @@ public class UserEntity extends BaseEntity {
     @Column(length = 2100)
     private String pic;
 
-    @Column(length = 2100, name = "firebase_token")
+    @Column(length = 2100)
     private String firebaseToken;
 
     @Column(length = 10, nullable = false)
