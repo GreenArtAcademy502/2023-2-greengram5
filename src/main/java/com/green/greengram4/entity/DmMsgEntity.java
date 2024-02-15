@@ -10,7 +10,10 @@ public class DmMsgEntity extends CreatedAtEntity {
     @EmbeddedId
     private DmMsgIds dmMsgIds;
 
-
+    @ManyToOne
+    @MapsId("idm")
+    @JoinColumn(columnDefinition = "BIGINT UNSIGNED", name = "idm")
+    private DmEntity dmEntity;
 
     @ManyToOne
     @JoinColumn(name = "iuser", nullable = false)
