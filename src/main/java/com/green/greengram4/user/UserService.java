@@ -2,6 +2,8 @@ package com.green.greengram4.user;
 
 import com.green.greengram4.common.*;
 import com.green.greengram4.entity.UserEntity;
+import com.green.greengram4.entity.UserFollowEntity;
+import com.green.greengram4.entity.UserFollowIds;
 import com.green.greengram4.exception.AuthErrorCode;
 import com.green.greengram4.exception.RestApiException;
 import com.green.greengram4.security.AuthenticationFacade;
@@ -16,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Optional;
@@ -26,6 +29,7 @@ import java.util.Optional;
 public class UserService {
     private final UserMapper mapper;
     private final UserRepository repository;
+    private final UserFollowRepository followRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final AppProperties appProperties;
@@ -171,22 +175,63 @@ public class UserService {
         return mapper.selUserInfo(dto);
     }
 
+    @Transactional
     public ResVo patchUserFirebaseToken(UserFirebaseTokenPatchDto dto) {
+        UserEntity entity = repository.getReferenceById((long)authenticationFacade.getLoginUserPk());
+        entity.setFirebaseToken(dto.getFirebaseToken());
+        return new ResVo(Const.SUCCESS);
+    }
+    /*
+        public ResVo patchUserFirebaseToken(UserFirebaseTokenPatchDto dto) {
         int affectedRows = mapper.updUserFirebaseToken(dto);
         return new ResVo(affectedRows);
     }
+    */
 
+    @Transactional
     public UserPicPatchDto patchUserPic(MultipartFile pic) {
-        UserPicPatchDto dto = new UserPicPatchDto();
-        dto.setIuser(authenticationFacade.getLoginUserPk());
-        String path = "/user/" + dto.getIuser();
+        Long iuser = Long.valueOf(authenticationFacade.getLoginUserPk());
+        UserEntity entity = repository.getReferenceById(iuser);
+        String path = "/user/" + iuser;
         myFileUtils.delFolderTrigger(path);
         String savedPicFileNm = myFileUtils.transferTo(pic, path);
+        entity.setPic(savedPicFileNm);
+
+        UserPicPatchDto dto = new UserPicPatchDto();
+        dto.setIuser(iuser.intValue());
         dto.setPic(savedPicFileNm);
-        int affectedRows = mapper.updUserPic(dto);
         return dto;
     }
 
+//    public UserPicPatchDto patchUserPic(MultipartFile pic) {
+//        UserPicPatchDto dto = new UserPicPatchDto();
+//        dto.setIuser(authenticationFacade.getLoginUserPk());
+//        String path = "/user/" + dto.getIuser();
+//        myFileUtils.delFolderTrigger(path);
+//        String savedPicFileNm = myFileUtils.transferTo(pic, path);
+//        dto.setPic(savedPicFileNm);
+//        int affectedRows = mapper.updUserPic(dto);
+//        return dto;
+//    }
+
+    public ResVo toggleFollow(UserFollowDto dto) {
+        UserFollowIds ids = new UserFollowIds();
+        ids.setFromIuser(dto.getFromIuser());
+        ids.setToIuser(dto.getToIuser());
+        Optional<UserFollowEntity> optEntity = followRepository.findById(ids);
+        UserFollowEntity entity = optEntity.isPresent() ? optEntity.get() : null;
+
+        if(entity == null) {
+            UserFollowEntity saveUserFollowEntity = new UserFollowEntity();
+            saveUserFollowEntity.setUserFollowIds(ids);
+            followRepository.save(saveUserFollowEntity);
+        } else {
+            followRepository.delete(entity);
+        }
+        return new ResVo(Const.SUCCESS);
+    }
+
+    /*
     public ResVo toggleFollow(UserFollowDto dto) {
         int delAffectedRows = mapper.delUserFollow(dto);
         if(delAffectedRows == 1) {
@@ -195,4 +240,5 @@ public class UserService {
         int insAffectedRows = mapper.insUserFollow(dto);
         return new ResVo(Const.SUCCESS);
     }
+     */
 }
