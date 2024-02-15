@@ -1,6 +1,7 @@
 package com.green.greengram4.user;
 
 import com.green.greengram4.common.*;
+import com.green.greengram4.entity.UserEntity;
 import com.green.greengram4.exception.AuthErrorCode;
 import com.green.greengram4.exception.RestApiException;
 import com.green.greengram4.security.AuthenticationFacade;
@@ -24,12 +25,14 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserService {
     private final UserMapper mapper;
+    private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final AppProperties appProperties;
     private final CookieUtils cookieUtils;
     private final AuthenticationFacade authenticationFacade;
     private final MyFileUtils myFileUtils;
+
 
     public ResVo signup(UserSignupDto dto) {
         String hashedPw = passwordEncoder.encode(dto.getUpw());

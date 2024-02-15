@@ -3,7 +3,7 @@ package com.green.greengram4.entity;
 import com.green.greengram4.common.ProviderTypeEnum;
 import com.green.greengram4.common.RoleEnum;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 @Data
@@ -43,5 +43,4 @@ public class UserEntity extends BaseEntity {
     @Enumerated(value = EnumType.STRING)
     @ColumnDefault("'USER'")
     private RoleEnum role;
-
 }
