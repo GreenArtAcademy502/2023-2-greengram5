@@ -4,6 +4,5 @@ import lombok.Data;
 
 @Data
 public class UserFollowDto {
-    private long fromIuser;
     private long toIuser;
 }
