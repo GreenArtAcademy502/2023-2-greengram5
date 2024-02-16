@@ -3,10 +3,13 @@ package com.green.greengram4.feed;
 import com.green.greengram4.common.Const;
 import com.green.greengram4.common.MyFileUtils;
 import com.green.greengram4.common.ResVo;
+import com.green.greengram4.entity.FeedEntity;
+import com.green.greengram4.entity.UserEntity;
 import com.green.greengram4.exception.FeedErrorCode;
 import com.green.greengram4.exception.RestApiException;
 import com.green.greengram4.feed.model.*;
 import com.green.greengram4.security.AuthenticationFacade;
+import com.green.greengram4.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,6 +27,8 @@ public class FeedService {
     private final FeedPicsMapper picsMapper;
     private final FeedFavMapper favMapper;
     private final FeedCommentMapper commentMapper;
+    private final FeedRepository repository;
+    private final UserRepository userRepository;
     private final AuthenticationFacade authenticationFacade;
     private final MyFileUtils myFileUtils;
 
@@ -33,13 +38,17 @@ public class FeedService {
             throw new RestApiException(FeedErrorCode.PICS_MORE_THEN_ONE);
         }
 
-        dto.setIuser(authenticationFacade.getLoginUserPk());
-        log.info("dto: {}", dto);
-        int feedAffectedRows = mapper.insFeed(dto);
-        String target = "/feed/" + dto.getIfeed();
+        UserEntity userEntity = userRepository.getReferenceById((long)authenticationFacade.getLoginUserPk());
+        FeedEntity feedEntity = new FeedEntity();
+        feedEntity.setUserEntity(userEntity);
+        feedEntity.setContents(dto.getContents());
+        feedEntity.setLocation(dto.getLocation());
+        repository.save(feedEntity);
+
+        String target = "/feed/" + feedEntity.getIfeed();
 
         FeedPicsInsDto pDto = new FeedPicsInsDto();
-        pDto.setIfeed(dto.getIfeed());
+        pDto.setIfeed(feedEntity.getIfeed().intValue());
         for(MultipartFile file : dto.getPics()) {
             String saveFileNm = myFileUtils.transferTo(file, target);
             pDto.getPics().add(saveFileNm);
@@ -47,6 +56,27 @@ public class FeedService {
         int feedPicsAffectedRows = picsMapper.insFeedPics(pDto);
         return pDto;
     }
+
+//    @Transactional
+//    public FeedPicsInsDto postFeed(FeedInsDto dto) {
+//        if(dto.getPics() == null) {
+//            throw new RestApiException(FeedErrorCode.PICS_MORE_THEN_ONE);
+//        }
+//
+//        dto.setIuser(authenticationFacade.getLoginUserPk());
+//        log.info("dto: {}", dto);
+//        int feedAffectedRows = mapper.insFeed(dto);
+//        String target = "/feed/" + dto.getIfeed();
+//
+//        FeedPicsInsDto pDto = new FeedPicsInsDto();
+//        pDto.setIfeed(dto.getIfeed());
+//        for(MultipartFile file : dto.getPics()) {
+//            String saveFileNm = myFileUtils.transferTo(file, target);
+//            pDto.getPics().add(saveFileNm);
+//        }
+//        int feedPicsAffectedRows = picsMapper.insFeedPics(pDto);
+//        return pDto;
+//    }
 
 
     public List<FeedSelVo> getFeedAll(FeedSelDto dto) {
