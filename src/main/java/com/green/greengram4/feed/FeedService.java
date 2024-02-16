@@ -13,6 +13,7 @@ import com.green.greengram4.security.AuthenticationFacade;
 import com.green.greengram4.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -63,7 +64,6 @@ public class FeedService {
                                                                 .build()
                                                         ).collect(Collectors.toList());
         feedEntity.getFeedPicsEntityList().addAll(feedPicsEntityList);
-
         return pDto;
     }
 
@@ -89,9 +89,16 @@ public class FeedService {
 //    }
 
 
-    public List<FeedSelVo> getFeedAll(FeedSelDto dto) {
+    public List<FeedSelVo> getFeedAll(FeedSelDto dto, Pageable pageable) {
+        List<FeedSelVo> list = null;
+        if(dto.getIsFavList() == 0 && dto.getTargetIuser() > 0) {
+            UserEntity userEntity = new UserEntity();
+            userEntity.setIuser((long)dto.getTargetIuser());
+            List<FeedEntity> feedEntityList = repository.findAllByUserEntityOrderByIfeedDesc(userEntity, pageable);
+        }
+
         System.out.println("!!!!!");
-        List<FeedSelVo> list = mapper.selFeedAll(dto);
+        list = mapper.selFeedAll(dto);
 
         FeedCommentSelDto fcDto = new FeedCommentSelDto();
         fcDto.setStartIdx(0);
@@ -112,6 +119,30 @@ public class FeedService {
         }
         return list;
     }
+
+//    public List<FeedSelVo> getFeedAll(FeedSelDto dto) {
+//        System.out.println("!!!!!");
+//        List<FeedSelVo> list = mapper.selFeedAll(dto);
+//
+//        FeedCommentSelDto fcDto = new FeedCommentSelDto();
+//        fcDto.setStartIdx(0);
+//        fcDto.setRowCount(Const.FEED_COMMENT_FIRST_CNT);
+//
+//        for(FeedSelVo vo : list) {
+//            List<String> pics = picsMapper.selFeedPicsAll(vo.getIfeed());
+//            vo.setPics(pics);
+//
+//            fcDto.setIfeed(vo.getIfeed());
+//            List<FeedCommentSelVo> comments = commentMapper.selFeedCommentAll(fcDto);
+//            vo.setComments(comments);
+//
+//            if(comments.size() == Const.FEED_COMMENT_FIRST_CNT) {
+//                vo.setIsMoreComment(1);
+//                comments.remove(comments.size() - 1);
+//            }
+//        }
+//        return list;
+//    }
 
     public ResVo delFeed(FeedDelDto dto) {
         //1 이미지
