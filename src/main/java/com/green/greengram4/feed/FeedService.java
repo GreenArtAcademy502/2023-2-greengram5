@@ -4,6 +4,7 @@ import com.green.greengram4.common.Const;
 import com.green.greengram4.common.MyFileUtils;
 import com.green.greengram4.common.ResVo;
 import com.green.greengram4.entity.FeedEntity;
+import com.green.greengram4.entity.FeedPicsEntity;
 import com.green.greengram4.entity.UserEntity;
 import com.green.greengram4.exception.FeedErrorCode;
 import com.green.greengram4.exception.RestApiException;
@@ -18,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -53,7 +55,15 @@ public class FeedService {
             String saveFileNm = myFileUtils.transferTo(file, target);
             pDto.getPics().add(saveFileNm);
         }
-        int feedPicsAffectedRows = picsMapper.insFeedPics(pDto);
+        List<FeedPicsEntity> feedPicsEntityList = pDto.getPics()
+                                                        .stream()
+                                                        .map(item -> FeedPicsEntity.builder()
+                                                                .feedEntity(feedEntity)
+                                                                .pic(item)
+                                                                .build()
+                                                        ).collect(Collectors.toList());
+        feedEntity.getFeedPicsEntityList().addAll(feedPicsEntityList);
+
         return pDto;
     }
 
