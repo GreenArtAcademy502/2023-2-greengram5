@@ -11,8 +11,8 @@ public class DmMsgEntity extends CreatedAtEntity {
     private DmMsgIds dmMsgIds;
 
     @ManyToOne
-    @MapsId("idm")
-    @JoinColumn(columnDefinition = "BIGINT UNSIGNED", name = "idm")
+    @MapsId
+    @JoinColumn(columnDefinition = "BIGINT UNSIGNED", name = "idm2")
     private DmEntity dmEntity;
 
     @ManyToOne

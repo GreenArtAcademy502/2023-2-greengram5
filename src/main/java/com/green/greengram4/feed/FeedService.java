@@ -90,34 +90,31 @@ public class FeedService {
 
 
     public List<FeedSelVo> getFeedAll(FeedSelDto dto, Pageable pageable) {
-        List<FeedSelVo> list = null;
+        List<FeedEntity> feedEntityList = null;
         if(dto.getIsFavList() == 0 && dto.getTargetIuser() > 0) {
             UserEntity userEntity = new UserEntity();
             userEntity.setIuser((long)dto.getTargetIuser());
-            List<FeedEntity> feedEntityList = repository.findAllByUserEntityOrderByIfeedDesc(userEntity, pageable);
+            feedEntityList = repository.findAllByUserEntityOrderByIfeedDesc(userEntity, pageable);
         }
 
-        System.out.println("!!!!!");
-        list = mapper.selFeedAll(dto);
+        return feedEntityList == null
+               ? new ArrayList()
+               : feedEntityList.stream().map(item -> {
 
-        FeedCommentSelDto fcDto = new FeedCommentSelDto();
-        fcDto.setStartIdx(0);
-        fcDto.setRowCount(Const.FEED_COMMENT_FIRST_CNT);
+                   UserEntity userEntity = item.getUserEntity();
 
-        for(FeedSelVo vo : list) {
-            List<String> pics = picsMapper.selFeedPicsAll(vo.getIfeed());
-            vo.setPics(pics);
+                        return FeedSelVo.builder()
+                                .ifeed(item.getIfeed().intValue())
+                                .contents(item.getContents())
+                                .location(item.getLocation())
+                                .createdAt(item.getCreatedAt().toString())
+                                .writerIuser(userEntity.getIuser().intValue())
+                                .writerNm(userEntity.getNm())
+                                .writerPic(userEntity.getPic())
+                                .build();
+                    }
+                ).collect(Collectors.toList());
 
-            fcDto.setIfeed(vo.getIfeed());
-            List<FeedCommentSelVo> comments = commentMapper.selFeedCommentAll(fcDto);
-            vo.setComments(comments);
-
-            if(comments.size() == Const.FEED_COMMENT_FIRST_CNT) {
-                vo.setIsMoreComment(1);
-                comments.remove(comments.size() - 1);
-            }
-        }
-        return list;
     }
 
 //    public List<FeedSelVo> getFeedAll(FeedSelDto dto) {

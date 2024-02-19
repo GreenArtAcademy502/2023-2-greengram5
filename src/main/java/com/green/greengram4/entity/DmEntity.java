@@ -15,7 +15,7 @@ public class DmEntity extends CreatedAtEntity {
     @Column(columnDefinition = "BIGINT UNSIGNED")
     private Long idm;
 
-    @Column(length = 2000, name = "last_msg")
+    @Column(length = 2000)
     private String lastMsg;
 
     @LastModifiedDate
