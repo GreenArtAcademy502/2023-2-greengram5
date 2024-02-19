@@ -32,8 +32,10 @@ public class FeedService {
     private final FeedCommentMapper commentMapper;
     private final FeedRepository repository;
     private final UserRepository userRepository;
+    private final FeedCommentRepository commentRepository;
     private final AuthenticationFacade authenticationFacade;
     private final MyFileUtils myFileUtils;
+
 
     @Transactional
     public FeedPicsInsDto postFeed(FeedInsDto dto) {
@@ -101,8 +103,21 @@ public class FeedService {
                ? new ArrayList()
                : feedEntityList.stream().map(item -> {
 
-                   UserEntity userEntity = item.getUserEntity();
 
+                        List<FeedCommentSelVo> cmtList = commentRepository.findAllTop4ByFeedEntity(item)
+                                                                        .stream()
+                                                                        .map(cmt ->
+                                FeedCommentSelVo.builder()
+                                        .ifeedComment(cmt.getIfeedComment().intValue())
+                                        .comment(cmt.getComment())
+                                        .createdAt(cmt.getCreatedAt().toString())
+                                        .writerIuser(cmt.getUserEntity().getIuser().intValue())
+                                        .writerNm(cmt.getUserEntity().getNm())
+                                        .writerPic(cmt.getUserEntity().getPic())
+                                        .build()
+                        ).collect(Collectors.toList());
+
+                        UserEntity userEntity = item.getUserEntity();
                         return FeedSelVo.builder()
                                 .ifeed(item.getIfeed().intValue())
                                 .contents(item.getContents())
@@ -111,6 +126,7 @@ public class FeedService {
                                 .writerIuser(userEntity.getIuser().intValue())
                                 .writerNm(userEntity.getNm())
                                 .writerPic(userEntity.getPic())
+                                .comments(cmtList)
                                 .build();
                     }
                 ).collect(Collectors.toList());
