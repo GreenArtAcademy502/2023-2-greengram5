@@ -4,6 +4,7 @@ import com.green.greengram4.common.Const;
 import com.green.greengram4.common.MyFileUtils;
 import com.green.greengram4.common.ResVo;
 import com.green.greengram4.entity.FeedEntity;
+import com.green.greengram4.entity.FeedFavIds;
 import com.green.greengram4.entity.FeedPicsEntity;
 import com.green.greengram4.entity.UserEntity;
 import com.green.greengram4.exception.FeedErrorCode;
@@ -33,6 +34,7 @@ public class FeedService {
     private final FeedRepository repository;
     private final UserRepository userRepository;
     private final FeedCommentRepository commentRepository;
+    private final FeedFavRepository favRepository;
     private final AuthenticationFacade authenticationFacade;
     private final MyFileUtils myFileUtils;
 
@@ -104,6 +106,11 @@ public class FeedService {
                ? new ArrayList()
                : feedEntityList.stream().map(item -> {
 
+                        FeedFavIds feedFavIds = new FeedFavIds();
+                        feedFavIds.setIuser((long)authenticationFacade.getLoginUserPk());
+                        feedFavIds.setIfeed(item.getIfeed());
+                        int isFav = favRepository.findById(feedFavIds).isPresent() ? 1 : 0;
+
                         List<FeedPicsEntity> picEntityList = item.getFeedPicsEntityList();
                         List<String> picList = picEntityList.stream().map(pic -> pic.getPic()).collect(Collectors.toList());
 
@@ -138,6 +145,7 @@ public class FeedService {
                                 .isMoreComment(isMoreComment)
                                 .pics(picList)
                                 .comments(cmtList)
+                                .isFav(isFav)
                                 .build();
                     }
                 ).collect(Collectors.toList());
