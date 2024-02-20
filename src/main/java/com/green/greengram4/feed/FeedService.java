@@ -102,6 +102,9 @@ public class FeedService {
         return feedEntityList == null
                ? new ArrayList()
                : feedEntityList.stream().map(item -> {
+
+                        List<FeedPicsEntity> picList = item.getFeedPicsEntityList();
+
                         List<FeedCommentSelVo> cmtList = commentRepository.findAllTop4ByFeedEntity(item)
                                                                         .stream()
                                                                         .map(cmt ->
@@ -131,6 +134,7 @@ public class FeedService {
                                 .writerNm(userEntity.getNm())
                                 .writerPic(userEntity.getPic())
                                 .isMoreComment(isMoreComment)
+                                .pics(????)
                                 .comments(cmtList)
                                 .build();
                     }
