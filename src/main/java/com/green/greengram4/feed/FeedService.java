@@ -91,6 +91,7 @@ public class FeedService {
 //    }
 
 
+    @Transactional
     public List<FeedSelVo> getFeedAll(FeedSelDto dto, Pageable pageable) {
         List<FeedEntity> feedEntityList = null;
         if(dto.getIsFavList() == 0 && dto.getTargetIuser() > 0) {
@@ -103,7 +104,8 @@ public class FeedService {
                ? new ArrayList()
                : feedEntityList.stream().map(item -> {
 
-                        List<FeedPicsEntity> picList = item.getFeedPicsEntityList();
+                        List<FeedPicsEntity> picEntityList = item.getFeedPicsEntityList();
+                        List<String> picList = picEntityList.stream().map(pic -> pic.getPic()).collect(Collectors.toList());
 
                         List<FeedCommentSelVo> cmtList = commentRepository.findAllTop4ByFeedEntity(item)
                                                                         .stream()
@@ -134,7 +136,7 @@ public class FeedService {
                                 .writerNm(userEntity.getNm())
                                 .writerPic(userEntity.getPic())
                                 .isMoreComment(isMoreComment)
-                                .pics(????)
+                                .pics(picList)
                                 .comments(cmtList)
                                 .build();
                     }
