@@ -11,4 +11,5 @@ import java.util.List;
 public interface FeedRepository extends JpaRepository<FeedEntity, Long> {
     @EntityGraph(attributePaths = {"userEntity"})
     List<FeedEntity> findAllByUserEntityOrderByIfeedDesc(UserEntity userEntity, Pageable pageable);
+    //List<FeedEntity> findAllByUserEntity(UserEntity userEntity, Pageable pageable);
 }

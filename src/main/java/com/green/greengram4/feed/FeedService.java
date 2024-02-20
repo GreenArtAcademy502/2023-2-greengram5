@@ -102,8 +102,6 @@ public class FeedService {
         return feedEntityList == null
                ? new ArrayList()
                : feedEntityList.stream().map(item -> {
-
-
                         List<FeedCommentSelVo> cmtList = commentRepository.findAllTop4ByFeedEntity(item)
                                                                         .stream()
                                                                         .map(cmt ->
@@ -116,7 +114,13 @@ public class FeedService {
                                         .writerPic(cmt.getUserEntity().getPic())
                                         .build()
                         ).collect(Collectors.toList());
-
+                        //cmtList가 4개이면 > isMoreComment = 1, cmtList에 마지막 하나는 제거
+                        //else > isMoreComment = 0, cmtList는 변화가 없다.
+                        int isMoreComment = 0;
+                        if(cmtList.size() > 3) {
+                            isMoreComment = 1;
+                            cmtList.remove(cmtList.size() - 1);
+                        }
                         UserEntity userEntity = item.getUserEntity();
                         return FeedSelVo.builder()
                                 .ifeed(item.getIfeed().intValue())
@@ -126,6 +130,7 @@ public class FeedService {
                                 .writerIuser(userEntity.getIuser().intValue())
                                 .writerNm(userEntity.getNm())
                                 .writerPic(userEntity.getPic())
+                                .isMoreComment(isMoreComment)
                                 .comments(cmtList)
                                 .build();
                     }
