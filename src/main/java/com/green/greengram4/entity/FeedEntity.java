@@ -30,4 +30,5 @@ public class FeedEntity extends BaseEntity {
     @OneToMany(mappedBy = "feedEntity", cascade = CascadeType.PERSIST)
     private List<FeedPicsEntity> feedPicsEntityList = new ArrayList();
 
+
 }

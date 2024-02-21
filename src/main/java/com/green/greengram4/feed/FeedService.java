@@ -129,7 +129,7 @@ public class FeedService {
                         //cmtList가 4개이면 > isMoreComment = 1, cmtList에 마지막 하나는 제거
                         //else > isMoreComment = 0, cmtList는 변화가 없다.
                         int isMoreComment = 0;
-                        if(cmtList.size() > 3) {
+                        if(cmtList.size() == 4) {
                             isMoreComment = 1;
                             cmtList.remove(cmtList.size() - 1);
                         }
@@ -143,8 +143,8 @@ public class FeedService {
                                 .writerNm(userEntity.getNm())
                                 .writerPic(userEntity.getPic())
                                 .isMoreComment(isMoreComment)
-                                .pics(picList)
                                 .comments(cmtList)
+                                .pics(picList)
                                 .isFav(isFav)
                                 .build();
                     }
