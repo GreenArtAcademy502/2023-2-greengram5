@@ -1,6 +1,7 @@
 package com.green.greengram4.feed;
 
 import com.green.greengram4.entity.FeedEntity;
+import com.green.greengram4.entity.FeedFavEntity;
 import com.green.greengram4.entity.FeedPicsEntity;
 import com.green.greengram4.feed.model.FeedSelVo;
 import com.querydsl.core.types.Projections;
@@ -72,6 +73,16 @@ public class FeedQdslRepositoryImpl implements FeedQdslRepository {
                 , feedPicsEntity.feedEntity, feedPicsEntity.pic))
                 .from(feedPicsEntity)
                 .where(feedPicsEntity.feedEntity.in(feedEntityList))
+                .fetch();
+    }
+
+    @Override
+    public List<FeedFavEntity> selFeedFavAllByMe(List<FeedEntity> feedEntityList, long loginIuser) {
+        return jpaQueryFactory.select(Projections.fields(FeedFavEntity.class
+                , feedFavEntity.feedEntity))
+                .from(feedFavEntity)
+                .where(feedFavEntity.feedEntity.in(feedEntityList)
+                        , feedFavEntity.userEntity.iuser.eq(loginIuser))
                 .fetch();
     }
 

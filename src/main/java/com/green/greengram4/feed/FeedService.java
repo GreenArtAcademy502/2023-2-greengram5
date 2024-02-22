@@ -3,10 +3,7 @@ package com.green.greengram4.feed;
 import com.green.greengram4.common.Const;
 import com.green.greengram4.common.MyFileUtils;
 import com.green.greengram4.common.ResVo;
-import com.green.greengram4.entity.FeedEntity;
-import com.green.greengram4.entity.FeedFavIds;
-import com.green.greengram4.entity.FeedPicsEntity;
-import com.green.greengram4.entity.UserEntity;
+import com.green.greengram4.entity.*;
 import com.green.greengram4.exception.FeedErrorCode;
 import com.green.greengram4.exception.RestApiException;
 import com.green.greengram4.feed.model.*;
@@ -94,11 +91,12 @@ public class FeedService {
 
     @Transactional
     public List<FeedSelVo> getFeedAll(FeedSelDto dto, Pageable pageable) {
-        dto.setLoginedIuser((long)authenticationFacade.getLoginUserPk());
+        long loginIuser = authenticationFacade.getLoginUserPk();
+        dto.setLoginedIuser(loginIuser);
         List<FeedEntity> list = repository.selFeedAll(dto, pageable);
 
         List<FeedPicsEntity> picList = repository.selFeedPicsAll(list);
-
+        List<FeedFavEntity> favList = repository.selFeedFavAllByMe(list, loginIuser);
         return list.stream().map(item ->
                 FeedSelVo.builder()
                         .ifeed(item.getIfeed().intValue())
