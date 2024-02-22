@@ -99,7 +99,14 @@ public class FeedService {
         final List<FeedCommentSelVo> cmtList = commentMapper.selFeedCommentEachTop4(list);
 
         return list.stream().map(item -> {
-                    //List<FeedCommentSelVo> eachCommentList = ??;
+                    List<FeedCommentSelVo> eachCommentList = cmtList.stream().filter(
+                            cmt -> cmt.getIfeed() == item.getIfeed()).collect(Collectors.toList());
+
+                    int isMoreComment = 0;
+                    if(eachCommentList.size() == 4) {
+                        isMoreComment = 1;
+                        eachCommentList.remove(eachCommentList.size() - 1);
+                    }
 
                     return FeedSelVo.builder()
                             .ifeed(item.getIfeed().intValue())
@@ -120,6 +127,8 @@ public class FeedService {
                                     ? 1
                                     : 0
                             )
+                            .isMoreComment(isMoreComment)
+                            .comments(eachCommentList)
                             .build();
                 }
                 ).collect(Collectors.toList());
