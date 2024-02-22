@@ -97,7 +97,7 @@ public class FeedService {
         dto.setLoginedIuser((long)authenticationFacade.getLoginUserPk());
         List<FeedEntity> list = repository.selFeedAll(dto, pageable);
 
-        List<FeedPicsEntity> picList = repository.selFeedPicsAll(???);
+        List<FeedPicsEntity> picList = repository.selFeedPicsAll(list);
 
         return list.stream().map(item ->
                 FeedSelVo.builder()
@@ -108,6 +108,11 @@ public class FeedService {
                         .writerIuser(item.getUserEntity().getIuser().intValue())
                         .writerNm(item.getUserEntity().getNm())
                         .writerPic(item.getUserEntity().getPic())
+                        .pics(picList.stream()
+                                    .filter(pic -> pic.getFeedEntity().getIfeed() == item.getIfeed())
+                                    .map(pic -> pic.getPic())
+                                    .collect(Collectors.toList())
+                        )
                         .build()
                 ).collect(Collectors.toList());
     }
