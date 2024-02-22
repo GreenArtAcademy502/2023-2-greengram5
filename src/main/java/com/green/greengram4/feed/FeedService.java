@@ -95,8 +95,19 @@ public class FeedService {
     @Transactional
     public List<FeedSelVo> getFeedAll(FeedSelDto dto, Pageable pageable) {
         dto.setLoginedIuser((long)authenticationFacade.getLoginUserPk());
-        List<FeedSelVo> list = repository.selFeedAll(dto, pageable);
-        return list;
+        List<FeedEntity> list = repository.selFeedAll(dto, pageable);
+
+        return list.stream().map(item ->
+                FeedSelVo.builder()
+                        .ifeed(item.getIfeed().intValue())
+                        .location(item.getLocation())
+                        .contents(item.getContents())
+                        .createdAt(item.getCreatedAt().toString())
+                        .writerIuser(item.getUserEntity().getIuser().intValue())
+                        .writerNm(item.getUserEntity().getNm())
+                        .writerPic(item.getUserEntity().getPic())
+                        .build()
+                ).collect(Collectors.toList());
     }
 
 //    @Transactional

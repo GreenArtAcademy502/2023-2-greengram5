@@ -3,6 +3,7 @@ package com.green.greengram4.feed;
 import com.green.greengram4.entity.FeedEntity;
 import com.green.greengram4.feed.model.FeedSelVo;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.green.greengram4.entity.QFeedEntity.feedEntity;
+import static com.green.greengram4.entity.QFeedFavEntity.feedFavEntity;
 import static com.green.greengram4.entity.QUserEntity.userEntity;
 
 @Slf4j
@@ -23,16 +25,22 @@ public class FeedQdslRepositoryImpl implements FeedQdslRepository {
     @Override
     public List<FeedEntity> selFeedAll(FeedSelDto dto, Pageable pageable) {
 
-        List<FeedEntity> feedList = jpaQueryFactory.select(feedEntity)
-                .from(feedEntity)
-                .join(feedEntity.userEntity).fetchJoin()
-                .where(whereTargetUser(dto.getTargetIuser()))
-                .orderBy(feedEntity.ifeed.desc())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .fetch();
+        JPAQuery<FeedEntity> jpaQuery = jpaQueryFactory.select(feedEntity)
+                                                        .from(feedEntity)
+                                                        .join(feedEntity.userEntity).fetchJoin()
+                                                        .orderBy(feedEntity.ifeed.desc())
+                                                        .offset(pageable.getOffset())
+                                                        .limit(pageable.getPageSize());
 
-        return feedList;
+        if(dto.getIsFavList() == 1) {
+            jpaQuery.join(feedFavEntity)
+                    .on(feedEntity.ifeed.eq(feedFavEntity.feedEntity.ifeed)
+                        , feedFavEntity.userEntity.iuser.eq(dto.getLoginedIuser()));
+        } else {
+            jpaQuery.where(whereTargetUser(dto.getTargetIuser()));
+        }
+
+        return jpaQuery.fetch();
 
 //        return feedList.stream().map(item ->
 //                        FeedSelVo.builder()
