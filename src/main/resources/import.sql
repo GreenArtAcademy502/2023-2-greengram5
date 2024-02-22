@@ -80,3 +80,9 @@ INSERT INTO `t_feed_comment` (`ifeed_comment`, `iuser`, `ifeed`, `COMMENT`, `cre
 INSERT INTO `t_feed_comment` (`ifeed_comment`, `iuser`, `ifeed`, `COMMENT`, `created_at`, `updated_at`) VALUES (5, 1, 18, 'sadfsadfsdf', '2024-01-24 10:57:47', '2024-01-24 10:57:47');
 INSERT INTO `t_feed_comment` (`ifeed_comment`, `iuser`, `ifeed`, `COMMENT`, `created_at`, `updated_at`) VALUES (6, 3, 18, '퉤퉤퉤', '2024-01-18 10:14:27', '2024-01-18 10:14:27');
 INSERT INTO `t_feed_comment` (`ifeed_comment`, `iuser`, `ifeed`, `COMMENT`, `created_at`, `updated_at`) VALUES (7, 1, 18, '응????', '2024-01-18 10:14:27', '2024-01-18 10:14:27');
+
+
+INSERT INTO `t_feed_fav` (`created_at`, `ifeed`, `iuser`) VALUES ('2024-02-20 15:56:05.000000', 1, 1);
+INSERT INTO `t_feed_fav` (`created_at`, `ifeed`, `iuser`) VALUES ('2024-02-20 15:56:13.000000', 2, 1);
+INSERT INTO `t_feed_fav` (`created_at`, `ifeed`, `iuser`) VALUES ('2024-02-20 15:56:13.000000', 2, 2);
+INSERT INTO `t_feed_fav` (`created_at`, `ifeed`, `iuser`) VALUES ('2024-02-20 15:56:13.000000', 2, 3);

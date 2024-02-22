@@ -94,10 +94,8 @@ public class FeedService {
 
     @Transactional
     public List<FeedSelVo> getFeedAll(FeedSelDto dto, Pageable pageable) {
-        List<FeedSelVo> list = repository.selFeedAll(
-                (long)authenticationFacade.getLoginUserPk()
-                , null
-                , pageable);
+        dto.setLoginedIuser((long)authenticationFacade.getLoginUserPk());
+        List<FeedSelVo> list = repository.selFeedAll(dto, pageable);
         return list;
     }
 
