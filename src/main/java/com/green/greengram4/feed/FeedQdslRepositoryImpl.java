@@ -1,7 +1,9 @@
 package com.green.greengram4.feed;
 
 import com.green.greengram4.entity.FeedEntity;
+import com.green.greengram4.entity.FeedPicsEntity;
 import com.green.greengram4.feed.model.FeedSelVo;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -15,6 +17,7 @@ import java.util.stream.Collectors;
 
 import static com.green.greengram4.entity.QFeedEntity.feedEntity;
 import static com.green.greengram4.entity.QFeedFavEntity.feedFavEntity;
+import static com.green.greengram4.entity.QFeedPicsEntity.feedPicsEntity;
 import static com.green.greengram4.entity.QUserEntity.userEntity;
 
 @Slf4j
@@ -61,6 +64,15 @@ public class FeedQdslRepositoryImpl implements FeedQdslRepository {
 
 
 
+    }
+
+    @Override
+    public List<FeedPicsEntity> selFeedPicsAll(List<FeedEntity> feedEntityList) {
+        return jpaQueryFactory.select(Projections.fields(FeedPicsEntity.class
+                , feedPicsEntity.feedEntity, feedPicsEntity.pic))
+                .from(feedPicsEntity)
+                .where(feedPicsEntity.feedEntity.in(feedEntityList))
+                .fetch();
     }
 
     private BooleanExpression whereTargetUser(long targetIuser) {

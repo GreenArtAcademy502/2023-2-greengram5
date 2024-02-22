@@ -97,6 +97,8 @@ public class FeedService {
         dto.setLoginedIuser((long)authenticationFacade.getLoginUserPk());
         List<FeedEntity> list = repository.selFeedAll(dto, pageable);
 
+        List<FeedPicsEntity> picList = repository.selFeedPicsAll(???);
+
         return list.stream().map(item ->
                 FeedSelVo.builder()
                         .ifeed(item.getIfeed().intValue())
