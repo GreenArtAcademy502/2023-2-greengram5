@@ -93,10 +93,9 @@ public class FeedService {
     public List<FeedSelVo> getFeedAll(FeedSelDto dto, Pageable pageable) {
         long loginIuser = authenticationFacade.getLoginUserPk();
         dto.setLoginedIuser(loginIuser);
-        List<FeedEntity> list = repository.selFeedAll(dto, pageable);
-
-        List<FeedPicsEntity> picList = repository.selFeedPicsAll(list);
-        List<FeedFavEntity> favList = repository.selFeedFavAllByMe(list, loginIuser);
+        final List<FeedEntity> list = repository.selFeedAll(dto, pageable);
+        final List<FeedPicsEntity> picList = repository.selFeedPicsAll(list);
+        final List<FeedFavEntity> favList = dto.getIsFavList() == 1 ? null : repository.selFeedFavAllByMe(list, loginIuser);
         return list.stream().map(item ->
                 FeedSelVo.builder()
                         .ifeed(item.getIfeed().intValue())
@@ -110,6 +109,12 @@ public class FeedService {
                                     .filter(pic -> pic.getFeedEntity().getIfeed() == item.getIfeed())
                                     .map(pic -> pic.getPic())
                                     .collect(Collectors.toList())
+                        )
+                        .isFav(dto.getIsFavList() == 1
+                                ? 1
+                                : favList.stream().anyMatch(fav -> fav.getFeedEntity().getIfeed() == item.getIfeed())
+                                    ? 1
+                                    : 0
                         )
                         .build()
                 ).collect(Collectors.toList());
