@@ -96,27 +96,32 @@ public class FeedService {
         final List<FeedEntity> list = repository.selFeedAll(dto, pageable);
         final List<FeedPicsEntity> picList = repository.selFeedPicsAll(list);
         final List<FeedFavEntity> favList = dto.getIsFavList() == 1 ? null : repository.selFeedFavAllByMe(list, loginIuser);
-        return list.stream().map(item ->
-                FeedSelVo.builder()
-                        .ifeed(item.getIfeed().intValue())
-                        .location(item.getLocation())
-                        .contents(item.getContents())
-                        .createdAt(item.getCreatedAt().toString())
-                        .writerIuser(item.getUserEntity().getIuser().intValue())
-                        .writerNm(item.getUserEntity().getNm())
-                        .writerPic(item.getUserEntity().getPic())
-                        .pics(picList.stream()
+        final List<FeedCommentSelVo> cmtList = commentMapper.selFeedCommentEachTop4(list);
+
+        return list.stream().map(item -> {
+                    //List<FeedCommentSelVo> eachCommentList = ??;
+
+                    return FeedSelVo.builder()
+                            .ifeed(item.getIfeed().intValue())
+                            .location(item.getLocation())
+                            .contents(item.getContents())
+                            .createdAt(item.getCreatedAt().toString())
+                            .writerIuser(item.getUserEntity().getIuser().intValue())
+                            .writerNm(item.getUserEntity().getNm())
+                            .writerPic(item.getUserEntity().getPic())
+                            .pics(picList.stream()
                                     .filter(pic -> pic.getFeedEntity().getIfeed() == item.getIfeed())
                                     .map(pic -> pic.getPic())
                                     .collect(Collectors.toList())
-                        )
-                        .isFav(dto.getIsFavList() == 1
-                                ? 1
-                                : favList.stream().anyMatch(fav -> fav.getFeedEntity().getIfeed() == item.getIfeed())
+                            )
+                            .isFav(dto.getIsFavList() == 1
+                                    ? 1
+                                    : favList.stream().anyMatch(fav -> fav.getFeedEntity().getIfeed() == item.getIfeed())
                                     ? 1
                                     : 0
-                        )
-                        .build()
+                            )
+                            .build();
+                }
                 ).collect(Collectors.toList());
     }
 
